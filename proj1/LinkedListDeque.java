@@ -1,13 +1,13 @@
 /**circular sentinel topology*/
 import java.util.StringJoiner;
 
-public class LinkedListDeque {
+public class LinkedListDeque<Iguodala> {
 	public class Node {
-		public int item;     /* Equivalent of first */
+		public Iguodala item;     /* Equivalent of first */
 		public Node previous;
 		public Node next; /* Equivalent of rest */
 
-		public Node(int i, Node p, Node h) {
+		public Node(Iguodala i, Node p, Node h) {
 			item = i;
 			previous = p;
 			next = h;		
@@ -20,14 +20,14 @@ public class LinkedListDeque {
 	/** Creates an empty list. */
 	public LinkedListDeque() {
 		size = 0;
-		sentinel = new Node(20160203, null, null);
+		sentinel = new Node(null, null, null);
 		/**At a circular sentinel topology, an empty list means
 		 its previous and next both have to point at itself.*/
       	sentinel.previous = sentinel;
       	sentinel.next = sentinel;
 	}
    
-   public void addFirst(int x) {
+   public void addFirst(Iguodala x) {
 		Node oldFrontNode = sentinel.next;
 		Node newNode = new Node(x, sentinel, oldFrontNode);
 		sentinel.next = newNode;
@@ -37,7 +37,7 @@ public class LinkedListDeque {
    
 
 	/** Puts an item at the back of the list. */
-	public void addLast(int x) {
+	public void addLast(Iguodala x) {
 		Node oldLastNode = sentinel.previous;
 		Node newNode = new Node(x, oldLastNode, sentinel);
 		oldLastNode.next = newNode;
@@ -63,8 +63,8 @@ public class LinkedListDeque {
 		StringJoiner separator = new StringJoiner(" ");
 
 		for (int i = 0; i < size; i++) {
-			int newItem = get(i);
-			separator.add(Integer.toString(newItem));
+			Iguodala newItem = get(i);
+			separator.add(newItem.toString());
 			
 		}
 		System.out.print(separator.toString());
@@ -83,15 +83,15 @@ public class LinkedListDeque {
 
 	/**Removes and returns the item at the front of the Deque.
 	 If no such item exists, returns null.*/
-	public int removeFirst() {
+	public Iguodala removeFirst() {
 		if (size == 0 ) {
-			return 0;//for int type
+			return null;
 		}
 		Node oldSecondNode = sentinel.next.next;
 		sentinel.next.previous = null;
 		sentinel.next.next = null;
-		int remove_value = sentinel.next.item;
-		sentinel.next.item = 0;
+		Iguodala remove_value = sentinel.next.item;
+		sentinel.next.item = null;
 		sentinel.next = oldSecondNode;
 		oldSecondNode.previous = sentinel;
 		size -= 1;
@@ -100,15 +100,15 @@ public class LinkedListDeque {
 
 	/**Removes and returns the item at the back of the Deque.
 	 If no such item exists, returns null.*/
-	public int removeLast() {
+	public Iguodala removeLast() {
 		if (size == 0 ) {
-			return 0;//for int type
+			return null;//for int type
 		}
 		Node oldSecondLastNode = sentinel.previous.previous;
 		sentinel.previous.previous = null;
 		sentinel.previous.next = null;
-		int remove_value = sentinel.previous.item;
-		sentinel.previous.item = 0;
+		Iguodala remove_value = sentinel.previous.item;
+		sentinel.previous.item = null;
 		sentinel.previous = oldSecondLastNode;
 		oldSecondLastNode.next = sentinel;
 		size -= 1;
@@ -117,9 +117,9 @@ public class LinkedListDeque {
 
 	/**Gets the item at the given index.
 	 If no such item exists, returns null.*/
-	public int get(int index) {
+	public Iguodala get(int index) {
 		if (index > size) {
-			return 0;
+			return null;
 		}
 		Node p = sentinel.next;
 		for (int i = 0; i< index; i++) {
@@ -129,9 +129,9 @@ public class LinkedListDeque {
 	}
 
 	/**Same as get, but uses recursion.*/
-	public int getRecursive(int index) {
+	public Iguodala getRecursive(int index) {
 		if (index > size) {
-			return 0;
+			return null;
 		}return RecursiveHelp(index).item;
 	}
 
