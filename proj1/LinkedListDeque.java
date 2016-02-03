@@ -20,16 +20,21 @@ public class LinkedListDeque {
 	/** Creates an empty list. */
 	public LinkedListDeque() {
 		size = 0;
-		sentinel = new Node(0, null, null);
+		sentinel = new Node(20160203, null, null);
+		/**At a circular sentinel topology, an empty list means
+		 its previous and next both have to point at itself.*/
+      	sentinel.previous = sentinel;
+      	sentinel.next = sentinel;
 	}
-
-	public void addFirst(int x) {
+   
+   public void addFirst(int x) {
 		Node oldFrontNode = sentinel.next;
 		Node newNode = new Node(x, sentinel, oldFrontNode);
 		sentinel.next = newNode;
 		oldFrontNode.previous = newNode;
 		size += 1;
 	}
+   
 
 	/** Puts an item at the back of the list. */
 	public void addLast(int x) {
@@ -52,16 +57,17 @@ public class LinkedListDeque {
 		return size;
 	}
 
-	/**Prints the items in the Deque from first to last, separated by a space.*/
+	/**Prints the items in the Deque from first to last,
+	 separated by a space.*/
 	public void printDeque() {
 		StringJoiner separator = new StringJoiner(" ");
 
 		for (int i = 0; i < size; i++) {
 			int newItem = get(i);
 			separator.add(Integer.toString(newItem));
-			System.out.print(separator.toString());
+			
 		}
-
+		System.out.print(separator.toString());
 		/************************************
 		An example of StringJoiner. 
 		StringJoiner separator = new StringJoiner(" ");
@@ -75,7 +81,8 @@ public class LinkedListDeque {
 		*************************************/
 	}
 
-	/**Removes and returns the item at the front of the Deque. If no such item exists, returns null.*/
+	/**Removes and returns the item at the front of the Deque.
+	 If no such item exists, returns null.*/
 	public int removeFirst() {
 		if (size == 0 ) {
 			return 0;//for int type
@@ -91,22 +98,57 @@ public class LinkedListDeque {
 		return remove_value;
 	}
 
-	/**Removes and returns the item at the back of the Deque. If no such item exists, returns null.*/
+	/**Removes and returns the item at the back of the Deque.
+	 If no such item exists, returns null.*/
 	public int removeLast() {
-		return 0;
+		if (size == 0 ) {
+			return 0;//for int type
+		}
+		Node oldSecondLastNode = sentinel.previous.previous;
+		sentinel.previous.previous = null;
+		sentinel.previous.next = null;
+		int remove_value = sentinel.previous.item;
+		sentinel.previous.item = 0;
+		sentinel.previous = oldSecondLastNode;
+		oldSecondLastNode.next = sentinel;
+		size -= 1;
+		return remove_value;
 	}
 
-	/**Gets the item at the given index*/
+	/**Gets the item at the given index.
+	 If no such item exists, returns null.*/
 	public int get(int index) {
-		return 0;
+		if (index > size) {
+			return 0;
+		}
+		Node p = sentinel.next;
+		for (int i = 0; i< index; i++) {
+			p = p.next;
+		}
+		return p.item;
 	}
 
 	/**Same as get, but uses recursion.*/
 	public int getRecursive(int index) {
-		return 0;
+		if (index > size) {
+			return 0;
+		}return RecursiveHelp(index).item;
 	}
+
+	/**I use a helper function to involve recursion.
+	 We need to discuss about it*/
+	public Node RecursiveHelp(int index) {
+		if (index == 0) {
+			return sentinel.next;
+		}return RecursiveHelp(index - 1).next;
+	}
+	/**************************************
+	main() for easy test in terminal
     public static void main(String[] args) {
-
+      LinkedListDeque k = new LinkedListDeque();
+      k.addFirst(3);
+      k.addLast(7);
+      k.printDeque();
     }
-
+	***************************************/
 }
