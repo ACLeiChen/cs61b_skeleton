@@ -118,7 +118,7 @@ public class LinkedListDeque<Iguodala> {
 	/**Gets the item at the given index.
 	 If no such item exists, returns null.*/
 	public Iguodala get(int index) {
-		if (index > size) {
+		if (index >= size) {
 			return null;
 		}
 		Node p = sentinel.next;
@@ -130,7 +130,7 @@ public class LinkedListDeque<Iguodala> {
 
 	/**Same as get, but uses recursion.*/
 	public Iguodala getRecursive(int index) {
-		if (index > size) {
+		if (index >= size) {
 			return null;
 		}return RecursiveHelp(index).item;
 	}
