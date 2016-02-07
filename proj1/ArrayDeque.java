@@ -1,8 +1,8 @@
 import java.util.StringJoiner;
 
-public class ArrayDeque { 
+public class ArrayDeque<Item> { 
 
-	private int[] items;
+	private Item[] items;
 	private int size; 
 	private static int resize_factor = 2;
 	private int nextFirst;
@@ -11,13 +11,13 @@ public class ArrayDeque {
 	/** Creates an empty list. */
 	public ArrayDeque() {
 		size = 0;
-		items = new int[8];
+		items = (Item[]) new Object[8];
 		nextFirst = 4;
 		nextLast = 5;
 	}
 
    	/** Puts an item at the start of the Deque. */
-    public void addFirst(int x) {
+    public void addFirst(Item x) {
     	/**the maximam size of a Deque is size = items.length - 2*/
    		if (size == items.length - 2) {
    			resize(items.length*resize_factor);
@@ -29,7 +29,7 @@ public class ArrayDeque {
    
 
 	/** Puts an item at the back of the Deque. */
-	public void addLast(int x) {
+	public void addLast(Item x) {
 		if (size == items.length - 2) {
    			resize(items.length*resize_factor);
    		}
@@ -56,9 +56,9 @@ public class ArrayDeque {
 		StringJoiner separator = new StringJoiner(" ");
 		/**for loop parameters should be considered.*/
 		for (int i = 0; i < size; i++) {
-			int newItem = get(i);
+			Item newItem = get(i);
 			//separator.add(newItem.toString());
-			separator.add(Integer.toString(newItem));
+			separator.add(newItem.toString());
 		}
 		System.out.print(separator.toString());
 		/************************************
@@ -76,13 +76,13 @@ public class ArrayDeque {
 
 	/**Removes and returns the item at the front of the Deque.
 	 If no such item exists, returns null.*/
-	public int removeFirst() {
+	public Item removeFirst() {
 		/**First, check if the Deque is empty*/
 		if (plusOne(nextFirst) == nextLast) {
-			return 0;
+			return null;
 		}
-		int remove_value = items[plusOne(nextFirst)];
-		items[plusOne(nextFirst)] = 0;
+		Item remove_value = items[plusOne(nextFirst)];
+		items[plusOne(nextFirst)] = null;
 		nextFirst = plusOne(nextFirst);
 		maintainusage();
 		size -= 1;
@@ -91,13 +91,13 @@ public class ArrayDeque {
 
 	/**Removes and returns the item at the back of the Deque.
 	 If no such item exists, returns null.*/
-	public int removeLast() {
+	public Item removeLast() {
 		/**First, check if the Deque is empty*/
 		if (plusOne(nextFirst) == nextLast) {
-			return 0;
+			return null;
 		}
-		int remove_value = items[minusOne(nextLast)];
-		items[minusOne(nextLast)] = 0;
+		Item remove_value = items[minusOne(nextLast)];
+		items[minusOne(nextLast)] = null;
 		nextLast = minusOne(nextLast);
 		maintainusage();
 		size -= 1;
@@ -106,16 +106,16 @@ public class ArrayDeque {
 
 	/**Gets the item at the given index.
 	 If no such item exists, returns null.*/
-	public int get(int index) {
+	public Item get(int index) {
 		if (index >= size) {
-			return 0;
+			return null;
 		}
 		return items[index + plusOne(nextFirst)];
 	}
 
 	/**resize the Deque whenever it's full*/
    	private void resize(int capacity) {
-   		int[] a = new int[capacity];
+   		Item[] a = (Item[]) new Object[capacity];
     	a = copyToNewArray(a);
     	items = a; 
    	}
@@ -123,7 +123,7 @@ public class ArrayDeque {
    	/**whenever the array usage ratio is < 25%, it will be chopped in half*/
    	private void maintainusage() {
    		if ((size + 2) * 4 < items.length) {
-   			int[] a = new int[items.length>>2];
+   			Item[] a = (Item[]) new Object[items.length>>2];
    			a = copyToNewArray(a);
    			items = a;
    			
@@ -132,7 +132,7 @@ public class ArrayDeque {
 
    	/**copy the items array in the correct order to a new array a.
    	Then return a.*/
-   	private int[] copyToNewArray(int[] a) {
+   	private Item[] copyToNewArray(Item[] a) {
    		if (nextFirst < nextLast) {
    			System.arraycopy(items, nextFirst + 1, a, 1, size);
    		}else {
