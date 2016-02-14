@@ -1,7 +1,7 @@
 /**circular sentinel topology*/
 import java.util.StringJoiner;
 
-public class LinkedListDeque<Iguodala> {
+public class LinkedListDeque<Iguodala> implements  Deque<Iguodala>{
 	public class Node {
 		public Iguodala item;     /* Equivalent of first */
 		public Node previous;
