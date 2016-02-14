@@ -26,7 +26,7 @@ public class LinkedListDeque<Iguodala> implements  Deque<Iguodala>{
       	sentinel.previous = sentinel;
       	sentinel.next = sentinel;
 	}
-   
+   @Override
    public void addFirst(Iguodala x) {
 		Node oldFrontNode = sentinel.next;
 		Node newNode = new Node(x, sentinel, oldFrontNode);
@@ -37,6 +37,7 @@ public class LinkedListDeque<Iguodala> implements  Deque<Iguodala>{
    
 
 	/** Puts an item at the back of the list. */
+	@Override
 	public void addLast(Iguodala x) {
 		Node oldLastNode = sentinel.previous;
 		Node newNode = new Node(x, oldLastNode, sentinel);
@@ -46,6 +47,7 @@ public class LinkedListDeque<Iguodala> implements  Deque<Iguodala>{
 	}
 
 	/**Returns true if deque is empty, false otherwise.*/
+	@Override
 	public boolean isEmpty() {
 		if (size == 0) {
 			return true;
@@ -53,12 +55,14 @@ public class LinkedListDeque<Iguodala> implements  Deque<Iguodala>{
 	}
 
 	/**Returns the number of items in the Deque.*/
+	@Override
 	public int size() {
 		return size;
 	}
 
 	/**Prints the items in the Deque from first to last,
 	 separated by a space.*/
+	@Override
 	public void printDeque() {
 		StringJoiner separator = new StringJoiner(" ");
 
@@ -83,6 +87,7 @@ public class LinkedListDeque<Iguodala> implements  Deque<Iguodala>{
 
 	/**Removes and returns the item at the front of the Deque.
 	 If no such item exists, returns null.*/
+	@Override
 	public Iguodala removeFirst() {
 		if (size == 0 ) {
 			return null;
@@ -100,6 +105,7 @@ public class LinkedListDeque<Iguodala> implements  Deque<Iguodala>{
 
 	/**Removes and returns the item at the back of the Deque.
 	 If no such item exists, returns null.*/
+	@Override
 	public Iguodala removeLast() {
 		if (size == 0 ) {
 			return null;//for int type
@@ -117,6 +123,7 @@ public class LinkedListDeque<Iguodala> implements  Deque<Iguodala>{
 
 	/**Gets the item at the given index.
 	 If no such item exists, returns null.*/
+	@Override
 	public Iguodala get(int index) {
 		if (index >= size) {
 			return null;
