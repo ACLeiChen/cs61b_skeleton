@@ -61,6 +61,6 @@ public class Palindrome {
         thisDeque.printDeque();
         System.out.print("\n");
         OffByOne obo = new OffByOne();
-        System.out.print(isPalindrome("", obo));
+        System.out.print(isPalindrome("flake", obo));
     }
 }

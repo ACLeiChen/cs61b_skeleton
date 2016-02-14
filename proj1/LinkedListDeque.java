@@ -26,8 +26,8 @@ public class LinkedListDeque<Iguodala> implements  Deque<Iguodala>{
       	sentinel.previous = sentinel;
       	sentinel.next = sentinel;
 	}
-   @Override
-   public void addFirst(Iguodala x) {
+	@Override
+	public void addFirst(Iguodala x) {
 		Node oldFrontNode = sentinel.next;
 		Node newNode = new Node(x, sentinel, oldFrontNode);
 		sentinel.next = newNode;
