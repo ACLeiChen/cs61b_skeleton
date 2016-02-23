@@ -12,7 +12,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 //import java.util.LinkedList;
-
+//cannot use the TextFlow, TextArea, TextInputControl, or HTMLEditor classes
 
 public class Editor extends Application {
     private static final int WINDOW_WIDTH = 500;
