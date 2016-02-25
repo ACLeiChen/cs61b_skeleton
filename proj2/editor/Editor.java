@@ -27,8 +27,8 @@ public class Editor extends Application {
     private String fontName = "Verdana";
 
     private LinkedList<Text> textList;
-    private LinkedList<Integer> xrenderList;
-    private LinkedList<Integer> yrenderList;
+    private LinkedList<Double> xrenderList;
+    private LinkedList<Double> yrenderList;
     
 
     public Editor() {
@@ -37,8 +37,7 @@ public class Editor extends Application {
         textBoundingBox = new Rectangle(0, 0);
         /**Storing the textList of the document. Initialize it with an empty LinkedList.*/
         textList = new LinkedList<Text>();
-        xrenderList = new LinkedList<Integer>();
-        yrenderList = new LinkedList<Integer>();
+
         
     }
     /** An EventHandler to handle keys that get pressed. */
@@ -46,13 +45,16 @@ public class Editor extends Application {
         int textCenterX;
         int textCenterY;
 
+        final Group rootThis;
         /** The Text to display on the screen. */
+        /*****
         private Text displayText = new Text(STARTING_TEXT_POSITION_X, STARTING_TEXT_POSITION_Y, "");
-
+        *****/
         KeyEventHandler(final Group root, int windowWidth, int windowHeight) {
             textCenterX = 0;
             textCenterY = 0;
-
+            rootThis = root;
+            /***********
             // Initialize some empty text and add it to root so that it will be displayed.
             displayText = new Text(textCenterX, textCenterY, "");
             // Always set the text origin to be VPos.TOP! Setting the origin to be VPos.TOP means
@@ -65,6 +67,7 @@ public class Editor extends Application {
 
             // All new Nodes need to be added to the root in order to be displayed.
             root.getChildren().add(displayText);
+             ***********/
         }
 
         @Override
@@ -77,11 +80,16 @@ public class Editor extends Application {
                 if (characterTyped.length() > 0 && characterTyped.charAt(0) != 8) {
                     // Ignore control keys, which have non-zero length, as well as the backspace
                     // key, which is represented as a character of value = 8 on Windows.
-                    textList.addLast(new Text(characterTyped));
+                    Text typedText = new Text(characterTyped);
+                    // add this text to the root each time when new text is typed
+                    rootThis.getChildren().add(typedText);
+                    //store this text in the textList
+                    textList.addLast(typedText);
                     keyEvent.consume();
                 }
-
+                //render all the text
                 renderEngine();
+                
             } else if (keyEvent.getEventType() == KeyEvent.KEY_PRESSED) {
                 // Arrow keys should be processed using the KEY_PRESSED event, because KEY_PRESSED
                 // events have a code that we can check (KEY_TYPED events don't have an associated
@@ -103,22 +111,52 @@ public class Editor extends Application {
 
         /**update all the rendering information when it's called*/
         private void renderEngine() {
-            // Figure out the size of the current text.
-            double textHeight = displayText.getLayoutBounds().getHeight();
-            double textWidth = displayText.getLayoutBounds().getWidth();
+            /**clear all the existed rendering information,
+             * by initiate xrenderList and yrenderList instead of in the Editor constructor */
+            xrenderList = new LinkedList<Double>();
+            yrenderList = new LinkedList<Double>();
 
+            /**update the rendering information*/
+            int characterNumber = textList.size();
+            //int rowNumber = (int) Math.round((double) characterNumber / WINDOW_WIDTH);
 
+            //for the first character in the first row
+            Text currentText = textList.getFirst();
             // Calculate the position so that the text will be at top left on the screen.
             double textTop = 0;
             double textLeft = 0;
+            xrenderList.addLast(textLeft);
+            yrenderList.addLast(textTop);
+            currentText.setX(textLeft);
+            currentText.setY(textTop);
+            currentText.setTextOrigin(VPos.TOP);
+            currentText.setFont(Font.font(fontName, fontSize));
+            double textHeight = currentText.getLayoutBounds().getHeight();
+            double textWidth = currentText.getLayoutBounds().getWidth();
+            xrenderList.addLast(textWidth);
+            yrenderList.addLast(textTop);
+            currentText.toFront();
 
+            double currentWidth = textWidth;
+            double currentHeight = textTop;
+            //for the rest text
+            int textIndex = 1;
+            while (textIndex < characterNumber) {
+                currentText = textList.get(textIndex);
+                currentText.setX(xrenderList.get(textIndex));
+                currentText.setY(yrenderList.get(textIndex));
+                currentText.setTextOrigin(VPos.TOP);
+                currentText.setFont(Font.font(fontName, fontSize));
+                textWidth = currentText.getLayoutBounds().getWidth();
+                textHeight = currentText.getLayoutBounds().getHeight();
+                currentWidth += textWidth;
+                currentHeight = textTop;
+                xrenderList.addLast(currentWidth);
+                yrenderList.addLast(currentHeight);
+                textIndex += 1;
+            }
+            /**layout all the text based on these undated rendering information*/
 
-            // Re-position the text.
-            displayText.setX(textLeft);
-            displayText.setY(textTop);
-
-            // Make sure the text appears in front of any other objects you might add.
-            displayText.toFront();
         }
     }
 
@@ -139,11 +177,9 @@ public class Editor extends Application {
         scene.setOnKeyTyped(keyEventHandler);
         scene.setOnKeyPressed(keyEventHandler);
 
-        // All new Nodes need to be added to the root in order to be displayed.
-        for (Text x : textList) {
-            root.getChildren().add(x);
-        }
-        
+
+
+
         
         primaryStage.setTitle("Editor");
 
