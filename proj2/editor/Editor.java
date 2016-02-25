@@ -8,16 +8,28 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-//import java.util.LinkedList;
+import java.util.LinkedList;
 //cannot use the TextFlow, TextArea, TextInputControl, or HTMLEditor classes
 
 public class Editor extends Application {
+    private final Rectangle textBoundingBox;
     private static final int WINDOW_WIDTH = 500;
     private static final int WINDOW_HEIGHT = 500;
+    /**The actual string to display, which is updated every time when a keyEvent occurs */
+    //private String oldString = "";
+    private LinkedList<String> contents;
 
+    public Editor() {
+        // Create a rectangle to surround the text that gets displayed.  Initialize it with a size
+        // of 0, since there isn't any text yet.
+        textBoundingBox = new Rectangle(0, 0);
+        /**Storing the contents of the document. Initialize it with an empty LinkedList.*/
+        contents = new LinkedList<String>();
+    }
     /** An EventHandler to handle keys that get pressed. */
     private class KeyEventHandler implements EventHandler<KeyEvent> {
         int textCenterX;
@@ -32,8 +44,8 @@ public class Editor extends Application {
         private int fontSize = STARTING_FONT_SIZE;
 
         private String fontName = "Verdana";
-        /**The actual string to display, which is updated every time when a keyEvent occurs */
-        private String oldString = "";
+
+
 
         KeyEventHandler(final Group root, int windowWidth, int windowHeight) {
             textCenterX = 0;
@@ -63,6 +75,7 @@ public class Editor extends Application {
                 if (characterTyped.length() > 0 && characterTyped.charAt(0) != 8) {
                     // Ignore control keys, which have non-zero length, as well as the backspace
                     // key, which is represented as a character of value = 8 on Windows.
+                    contents.addLast(characterTyped);
                     oldString = oldString.concat(characterTyped);
                     displayText.setText(oldString);
                     keyEvent.consume();
