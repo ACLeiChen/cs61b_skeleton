@@ -19,33 +19,35 @@ public class Editor extends Application {
     private final Rectangle textBoundingBox;
     private static final int WINDOW_WIDTH = 500;
     private static final int WINDOW_HEIGHT = 500;
-    /**The actual string to display, which is updated every time when a keyEvent occurs */
-    //private String oldString = "";
-    private LinkedList<String> contents;
+
+    private static final int STARTING_FONT_SIZE = 20;
+    private static final int STARTING_TEXT_POSITION_X = 250;
+    private static final int STARTING_TEXT_POSITION_Y = 250;
+    private int fontSize = STARTING_FONT_SIZE;
+    private String fontName = "Verdana";
+
+    private LinkedList<Text> textList;
+    private LinkedList<Integer> xrenderList;
+    private LinkedList<Integer> yrenderList;
+    
 
     public Editor() {
         // Create a rectangle to surround the text that gets displayed.  Initialize it with a size
         // of 0, since there isn't any text yet.
         textBoundingBox = new Rectangle(0, 0);
-        /**Storing the contents of the document. Initialize it with an empty LinkedList.*/
-        contents = new LinkedList<String>();
+        /**Storing the textList of the document. Initialize it with an empty LinkedList.*/
+        textList = new LinkedList<Text>();
+        xrenderList = new LinkedList<Integer>();
+        yrenderList = new LinkedList<Integer>();
+        
     }
     /** An EventHandler to handle keys that get pressed. */
     private class KeyEventHandler implements EventHandler<KeyEvent> {
         int textCenterX;
         int textCenterY;
 
-        private static final int STARTING_FONT_SIZE = 20;
-        private static final int STARTING_TEXT_POSITION_X = 250;
-        private static final int STARTING_TEXT_POSITION_Y = 250;
-
         /** The Text to display on the screen. */
         private Text displayText = new Text(STARTING_TEXT_POSITION_X, STARTING_TEXT_POSITION_Y, "");
-        private int fontSize = STARTING_FONT_SIZE;
-
-        private String fontName = "Verdana";
-
-
 
         KeyEventHandler(final Group root, int windowWidth, int windowHeight) {
             textCenterX = 0;
@@ -75,13 +77,11 @@ public class Editor extends Application {
                 if (characterTyped.length() > 0 && characterTyped.charAt(0) != 8) {
                     // Ignore control keys, which have non-zero length, as well as the backspace
                     // key, which is represented as a character of value = 8 on Windows.
-                    contents.addLast(characterTyped);
-                    oldString = oldString.concat(characterTyped);
-                    displayText.setText(oldString);
+                    textList.addLast(new Text(characterTyped));
                     keyEvent.consume();
                 }
 
-                centerText();
+                renderEngine();
             } else if (keyEvent.getEventType() == KeyEvent.KEY_PRESSED) {
                 // Arrow keys should be processed using the KEY_PRESSED event, because KEY_PRESSED
                 // events have a code that we can check (KEY_TYPED events don't have an associated
@@ -89,22 +89,20 @@ public class Editor extends Application {
                 KeyCode code = keyEvent.getCode();
                 if (code == KeyCode.UP) {
                     fontSize += 5;
-                    displayText.setFont(Font.font(fontName, fontSize));
-                    centerText();
+                    renderEngine();
                 } else if (code == KeyCode.DOWN) {
                     fontSize = Math.max(0, fontSize - 5);
-                    displayText.setFont(Font.font(fontName, fontSize));
-                    centerText();
+                    renderEngine();
                 }
                 if (code == KeyCode.BACK_SPACE) {
-                    oldString = oldString.substring(0, oldString.length() - 1);
-                    displayText.setText(oldString);
-                    centerText();
+                    textList.removeLast();
+                    renderEngine();
                 }
             }
         }
 
-        private void centerText() {
+        /**update all the rendering information when it's called*/
+        private void renderEngine() {
             // Figure out the size of the current text.
             double textHeight = displayText.getLayoutBounds().getHeight();
             double textWidth = displayText.getLayoutBounds().getWidth();
@@ -141,6 +139,12 @@ public class Editor extends Application {
         scene.setOnKeyTyped(keyEventHandler);
         scene.setOnKeyPressed(keyEventHandler);
 
+        // All new Nodes need to be added to the root in order to be displayed.
+        for (Text x : textList) {
+            root.getChildren().add(x);
+        }
+        
+        
         primaryStage.setTitle("Editor");
 
         // This is boilerplate, necessary to setup the window where things are displayed.
