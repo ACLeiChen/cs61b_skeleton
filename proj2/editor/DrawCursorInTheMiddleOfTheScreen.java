@@ -152,7 +152,7 @@ public class DrawCursorInTheMiddleOfTheScreen extends Application {
         // The rectangle should continue blinking forever.
         timeline.setCycleCount(Timeline.INDEFINITE);
         RectangleBlinkEventHandler cursorChange = new RectangleBlinkEventHandler();
-        KeyFrame keyFrame = new KeyFrame(Duration.seconds(1), cursorChange);
+        KeyFrame keyFrame = new KeyFrame(Duration.seconds(0.5), cursorChange);
         timeline.getKeyFrames().add(keyFrame);
         timeline.play();
     }
