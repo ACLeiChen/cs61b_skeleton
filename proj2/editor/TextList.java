@@ -110,10 +110,10 @@ public class TextList {
     }
 
     /**render all the text, also map them with their position*/
-    public void renderText(int windowWidth, String fontName, int fontSize) {
+    public void renderText(int windowWidth, int windowHeight, String fontName, int fontSize) {
         if (size != 0) {
             /**for the first text*/
-            int x = 0;
+            int x = 5;
             int y = 0;
             Node thisNode = new Node(null, null, null);
             Text thisText = new Text();
@@ -131,8 +131,8 @@ public class TextList {
                     thisText = thisNode.item;
                     int currentWidth = (int)thisText.getLayoutBounds().getWidth();
                     // word wraps at the edge of the window, position needs to be changed
-                    if ((x + currentWidth) > windowWidth) {
-                        x = 0;
+                    if ((x + currentWidth + 5) > windowWidth) {
+                        x = 5;
                         y = y + (int)thisText.getLayoutBounds().getHeight();
                     }
                     renderTextHelper(thisText, x, y, fontName, fontSize);
