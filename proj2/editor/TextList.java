@@ -5,6 +5,8 @@ import javafx.scene.text.Text;
 import javafx.geometry.VPos;
 import javafx.scene.text.Font;
 
+import java.util.LinkedList;
+
 /**
  * Created by ChenLei on 2016/2/28. It's basically a Linked list structure with
  * circular sentinel implementation. currentText is a node which is always pointing
@@ -95,7 +97,26 @@ public class TextList {
         }return null;
 
     }
-
+    /**return the first text,
+     * !!!calling this method will point currentText to sentinel!!!*/
+    public Text getFirstText() {
+        currentText = sentinel;
+        return currentText.next.item;
+    }
+    /**return all the text in a LinkedList<Character></>*/
+    public LinkedList<Character> getAllText() {
+        if (size() == 0) {
+            return null;
+        }else{
+            LinkedList<Character> allTextList = new LinkedList<Character>();
+            Node thisNode = sentinel.next;
+            while (thisNode != sentinel) {
+                allTextList.addLast(thisNode.item.getText().charAt(0));
+                thisNode = thisNode.next;
+            }
+            return allTextList;
+        }
+    }
     /**find corresponding Text and update the currentText*/
     public void findText(int cursorX, int cursorY) {
 
@@ -149,7 +170,6 @@ public class TextList {
         //thisText.toFront();
         textMapping(x, y, thisText);
     }
-
     /**Returns true if deque is empty, false otherwise.*/
     
     public boolean isEmpty() {
