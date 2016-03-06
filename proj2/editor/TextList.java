@@ -143,31 +143,39 @@ public class TextList {
             thisText = thisNode.item;
             //The above 2 line cannot be put in the helper method, because the condition
             // of while-loop also uses thisNode.
-            renderTextHelper(thisText, x, y, fontName, fontSize);
+            thisText.setFont(Font.font(fontName, fontSize));
+            renderTextHelper(thisText, x, y);
             /**for the rest text, iterate*/
             if (size > 1) {
                 while (thisNode.next != sentinel) {
-                    x = x + (int)thisText.getLayoutBounds().getWidth();
+                    /**A faster way to do the rounding without using Math.round() is:
+                     * int a = (int) (doubleVar + 0.5);
+                     * But it's not so readable.*/
+                    x = x + (int)Math.round(thisText.getLayoutBounds().getWidth());
                     thisNode = thisNode.next;
                     thisText = thisNode.item;
-                    int currentWidth = (int)thisText.getLayoutBounds().getWidth();
-                    // word wraps at the edge of the window, position needs to be changed
+                    //Fontsize has to be set before trying to check for word wrapping.
+                    thisText.setFont(Font.font(fontName, fontSize));
+                    // word wraps at the edge of the window, next position would start from a new line
+                    int currentWidth = (int)Math.round(thisText.getLayoutBounds().getWidth());
                     if ((x + currentWidth + 5) > windowWidth) {
                         x = 5;
-                        y = y + (int)thisText.getLayoutBounds().getHeight();
+                        y = y + (int)Math.round(thisText.getLayoutBounds().getHeight());
                     }
-                    renderTextHelper(thisText, x, y, fontName, fontSize);
+                    //"\n" means to start a new line
+                    if (thisText.getText().equals("\n")) {
+                        x = 5;
+                        y = y + (int)Math.round(thisText.getLayoutBounds().getHeight()/2.0);
+                    }
+                    renderTextHelper(thisText, x, y);
                 }
             }
         }
     }
 
-    private void renderTextHelper(Text thisText, int x, int y, String fontName, int fontSize) {
+    private void renderTextHelper(Text thisText, int x, int y) {
         thisText.setX(x);
         thisText.setY(y);
-        thisText.setTextOrigin(VPos.TOP);
-        thisText.setFont(Font.font(fontName, fontSize));
-        //thisText.toFront();
         textMapping(x, y, thisText);
     }
     /**Returns true if deque is empty, false otherwise.*/

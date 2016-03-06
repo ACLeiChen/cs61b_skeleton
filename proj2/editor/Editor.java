@@ -34,7 +34,7 @@ public class Editor extends Application {
     private static int WINDOW_WIDTH = 500;
     private static int WINDOW_HEIGHT = 500;
 
-    private static final int STARTING_FONT_SIZE = 20;
+    private static final int STARTING_FONT_SIZE = 12;
     private static final int STARTING_TEXT_POSITION_X = 250;
     private static final int STARTING_TEXT_POSITION_Y = 250;
     private static int fontSize = STARTING_FONT_SIZE;
@@ -96,12 +96,18 @@ public class Editor extends Application {
                 // the KEY_TYPED event, javafx handles the "Shift" key and associated
                 // capitalization.
                 String characterTyped = keyEvent.getCharacter();
+                // Ignore control keys, which have non-zero length, as well as the backspace
+                // key, which is represented as a character of value = 8 on Windows.
                 if (characterTyped.length() > 0 && characterTyped.charAt(0) != 8) {
-                    // Ignore control keys, which have non-zero length, as well as the backspace
-                    // key, which is represented as a character of value = 8 on Windows.
+                    //1. if a KEY_TYPED event is equal to "\r", that means "enter" key,
+                    //but you should use "\n" for all newlines to write a file.
+                    //2. "==" this operator will test for reference equality,
+                    //" Object.equals()" tests for value equality
+                    if (characterTyped.equals("\r")) {
+                        characterTyped = "\n";
+                    }
                     Text typedText = new Text(characterTyped);
                     typedText.setTextOrigin(VPos.TOP);
-                    typedText.setFont(Font.font(fontName, fontSize));
                     //store this text in the textList
                     textList.insert(typedText, root);
                     keyEvent.consume();
@@ -162,7 +168,7 @@ public class Editor extends Application {
                 }
             }else if ((code == KeyCode.SUBTRACT)|(code == KeyCode.MINUS)) {
                 if (textList.size() != 0) {
-                    fontSize = Math.max(0, fontSize - 4);
+                    fontSize = Math.max(4, fontSize - 4);
                     textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
                     renderBlinkingCursor();
                 }
@@ -214,8 +220,8 @@ public class Editor extends Application {
         }else{
             Text currentText = textList.getCurrentText();
             // Figure out the size of the current text.
-            double textHeight = currentText.getLayoutBounds().getHeight();
-            double textWidth = currentText.getLayoutBounds().getWidth();
+            int textHeight = (int)Math.round(currentText.getLayoutBounds().getHeight());
+            int textWidth = (int)Math.round(currentText.getLayoutBounds().getWidth());
             double textPostionX = currentText.getX();
             double textPostionY = currentText.getY();
             // Re-size and re-position the bounding box.
@@ -238,8 +244,7 @@ public class Editor extends Application {
         }else{
             Text firstText = textList.getFirstText();
             // Figure out the size of the current text.
-            double textHeight = firstText.getLayoutBounds().getHeight();
-            double textWidth = firstText.getLayoutBounds().getWidth();
+            int textHeight = (int)Math.round(firstText.getLayoutBounds().getHeight());
             double textPostionX = firstText.getX();
             double textPostionY = firstText.getY();
             // Re-size and re-position the bounding box.
@@ -283,6 +288,8 @@ public class Editor extends Application {
         }
         inputFilename = args.get(0);
         if (args.size() == 2) {
+            /**if the 2nd argument is "debug", you can output anything you want
+             * , but there is nothing now..........*/
             outputFilename = args.get(1);
         }
         try {
@@ -311,8 +318,13 @@ public class Editor extends Application {
                 // charRead = (char) intRead;
                 //charReadList.addLast(charRead);
                 String charRead = String.valueOf((char) intRead);
-                Text readText = new Text(charRead);
-                textList.insert(readText, root);
+                /**"\n" and "\r\n" both represent a newline. And we assume that "\r" is
+                 * always followed by a "\n", so "\r" can be ignored.*/
+                if (!charRead.equals("\r")) {
+                    Text readText = new Text(charRead);
+                    readText.setTextOrigin(VPos.TOP);
+                    textList.insert(readText, root);
+                }
             }
             /**rendering works weird, have to call renderText() again*/
             textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
