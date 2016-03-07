@@ -34,7 +34,7 @@ public class Editor extends Application {
     private static int WINDOW_WIDTH = 500;
     private static int WINDOW_HEIGHT = 500;
 
-    private static final int STARTING_FONT_SIZE = 12;
+    private static final int STARTING_FONT_SIZE = 20;
     private static final int STARTING_TEXT_POSITION_X = 250;
     private static final int STARTING_TEXT_POSITION_Y = 250;
     private static int fontSize = STARTING_FONT_SIZE;
@@ -91,7 +91,7 @@ public class Editor extends Application {
 
         @Override
         public void handle(KeyEvent keyEvent) {
-            if (keyEvent.getEventType() == KeyEvent.KEY_TYPED) {
+            if ((keyEvent.getEventType() == KeyEvent.KEY_TYPED)) {
                 // Use the KEY_TYPED event rather than KEY_PRESSED for letter keys, because with
                 // the KEY_TYPED event, javafx handles the "Shift" key and associated
                 // capitalization.
@@ -111,10 +111,10 @@ public class Editor extends Application {
                     //store this text in the textList
                     textList.insert(typedText, root);
                     keyEvent.consume();
+                    //render all the text
+                    textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
+                    renderBlinkingCursor();
                 }
-                //render all the text
-                textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
-                renderBlinkingCursor();
             } else if (keyEvent.getEventType() == KeyEvent.KEY_PRESSED) {
                 // Arrow keys should be processed using the KEY_PRESSED event, because KEY_PRESSED
                 // events have a code that we can check (KEY_TYPED events don't have an associated
@@ -135,11 +135,45 @@ public class Editor extends Application {
                     }
                 }
                 if (code == KeyCode.BACK_SPACE) {
-                    if (textList.size() != 0) {
-                        textList.delete(root);
-                        textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
-                        renderBlinkingCursor();
+                    handleBackSpace();
+                }
+                if (code == KeyCode.LEFT) {
+                    handleLeftArrow();
+                }
+                if (code == KeyCode.RIGHT) {
+                    handleRightArrow();
+                }
+                if (code == KeyCode.UP) {
+                    handleUpArrow();
+                }
+                if (code == KeyCode.DOWN) {
+                    handleDownArrow();
+                }
+            }
+        }
+        private void handleBackSpace() {
+            if (!textList.isSentinel()) {
+                int oldCursorX = (int)textBoundingBox.getX();
+                int oldCursorY = (int)textBoundingBox.getY();
+                textList.delete(root);
+                textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
+                renderBlinkingCursor();
+                //When the most recent action was to delete text and the cursor position is
+                // ambiguous, it should appear on the line where the deleted text was.
+                int newCursorX = (int)textBoundingBox.getX();
+                int newCursorY = (int)textBoundingBox.getY();
+                if (oldCursorX != 5) {
+                    if ((oldCursorY > newCursorY) | (oldCursorX < newCursorX)) {
+                        //getNextText() would change currentText's position in the textList,
+                        // so it needs to be fixed back.
+                        Text nextText = textList.getNextText();
+                        int newX = (int)nextText.getX();
+                        int newY = (int)nextText.getY();
+                        textBoundingBox.setX(newX);
+                        textBoundingBox.setY(newY);
+
                     }
+                    System.out.println("Bounding box: " + textBoundingBox);
                 }
             }
         }
@@ -150,7 +184,32 @@ public class Editor extends Application {
 
         }
         private void handleLeftArrow() {
-
+            //if the cursor is at the begining of the file, do nothing
+            if ((textBoundingBox.getX() == 5) && (textList.isSentinel())) {
+                return;
+            }else {
+                int oldCursorX = (int)textBoundingBox.getX();
+                int oldCursorY = (int)textBoundingBox.getY();
+                textList.moveToPrevious();
+                //textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
+                renderBlinkingCursor();
+                if (textList.isSentinel()) {
+                    return;
+                }
+                //if the previous line ends with a new line, the height needs to be half.
+                if (textList.getCurrentText().equals("\n")) {
+                    int halfHeight = (int)(textList.getCurrentText().getLayoutBounds().getHeight() / 2);
+                    textBoundingBox.setHeight(halfHeight);
+                }
+                //for ambiguous position of the cursor, it stays at the beginning
+                // of the previous line
+                int newCursorY = (int)textBoundingBox.getY();
+                if ((oldCursorX != 5) && (newCursorY < oldCursorY)) {
+                    textList.moveToNext();
+                    textBoundingBox.setX(5);
+                    textBoundingBox.setY(oldCursorY);
+                }
+            }
         }
         private void handleRightArrow() {
 
@@ -213,7 +272,7 @@ public class Editor extends Application {
     private void renderBlinkingCursor() {
         if (textList.size() == 0) {
             // For empty list, the position is the upper left hand corner of the screen.
-            textBoundingBox.setX(0);
+            textBoundingBox.setX(5);
             textBoundingBox.setY(0);
         }else if (textList.getCurrentText() == null) {
             putCursorAtStart();
@@ -221,6 +280,9 @@ public class Editor extends Application {
             Text currentText = textList.getCurrentText();
             // Figure out the size of the current text.
             int textHeight = (int)Math.round(currentText.getLayoutBounds().getHeight());
+            if (currentText.getText().equals("\n")) {
+                textHeight = (int)Math.round(currentText.getLayoutBounds().getHeight() / 2);
+            }
             int textWidth = (int)Math.round(currentText.getLayoutBounds().getWidth());
             double textPostionX = currentText.getX();
             double textPostionY = currentText.getY();
@@ -233,7 +295,7 @@ public class Editor extends Application {
         }
         // Many of the JavaFX classes have implemented the toString() function, so that
         // they print nicely by default.
-        //System.out.println("Bounding box: " + textBoundingBox);
+        System.out.println("Bounding box: " + textBoundingBox);
     }
     /**render the blinking cursor at the at the beginning of the file*/
     private void putCursorAtStart() {
@@ -245,6 +307,9 @@ public class Editor extends Application {
             Text firstText = textList.getFirstText();
             // Figure out the size of the current text.
             int textHeight = (int)Math.round(firstText.getLayoutBounds().getHeight());
+            if (firstText.getText().equals("\n")) {
+                textHeight = (int)Math.round(firstText.getLayoutBounds().getHeight() / 2);
+            }
             double textPostionX = firstText.getX();
             double textPostionY = firstText.getY();
             // Re-size and re-position the bounding box.

@@ -83,8 +83,8 @@ public class TextList {
     public Text getPreviousText() {
         //if next node is not sentinel
         if (currentText.previous.item != null) {
-            currentText = currentText.previous;
-            return currentText.item;
+            Node previousNode = currentText.previous;
+            return previousNode.item;
         }return null;
 
     }
@@ -92,10 +92,25 @@ public class TextList {
     public Text getNextText() {
         //if next node is not sentinel
         if (currentText.next.item != null) {
-            currentText = currentText.next;
-            return currentText.item;
+            Node nextNode = currentText.next;
+            return nextNode.item;
         }return null;
 
+    }
+    /**move the currentText to the next*/
+    public void moveToPrevious() {
+        if (currentText.next.item != null) {
+            currentText = currentText.previous;
+        }
+    }
+    /**move the currentText to the next*/
+    public void moveToNext() {
+        if (currentText.next.item != null) {
+            currentText = currentText.next;
+        }
+    }
+    public boolean isSentinel() {
+        return (currentText == sentinel);
     }
     /**return the first text,
      * !!!calling this method will point currentText to sentinel!!!*/
@@ -144,6 +159,10 @@ public class TextList {
             //The above 2 line cannot be put in the helper method, because the condition
             // of while-loop also uses thisNode.
             thisText.setFont(Font.font(fontName, fontSize));
+            if (thisText.getText().equals("\n")) {
+                x = 5;
+                y = y + (int)Math.round(thisText.getLayoutBounds().getHeight()/2.0);
+            }
             renderTextHelper(thisText, x, y);
             /**for the rest text, iterate*/
             if (size > 1) {
