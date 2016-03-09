@@ -5,7 +5,9 @@ import javafx.scene.text.Text;
 import javafx.geometry.VPos;
 import javafx.scene.text.Font;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+
 
 /**
  * Created by ChenLei on 2016/2/28. It's basically a Linked list structure with
@@ -29,8 +31,9 @@ public class TextList {
     private Node sentinel;
     private Node currentText;
     private int size;
-    //2D vecter for rendering
-    private Text[][] textVector;
+    //An arraylist for record new lines
+    private ArrayList<Node> newLineList;
+    int newYRecorder;
     /** Creates an empty list. */
     public TextList() {
         size = 0;
@@ -40,7 +43,7 @@ public class TextList {
          its previous and next both have to point at itself.*/
         sentinel.previous = sentinel;
         sentinel.next = sentinel;
-        textVector = new Text[10][10];
+        newYRecorder = 0;
     }
 
 
@@ -139,12 +142,25 @@ public class TextList {
 
     }
     /**map cursorX and cursorY to the current text*/
-    public void textMapping(int x, int y, Text thisText) {
-
+    private void recordNewLine(int y, Node thisNode) {
+        if (y != newYRecorder) {
+            newYRecorder = y;
+            newLineList.add(thisNode);
+        }
     }
-    /**if x or y is larger than textVector’s xsize or ysize , then resize.*/
-    public void resize(int x,int y) {
-
+    /**calculate and return the new line starter, then point currentText at it*/
+    public Text getNewLineStarter(int cursorY) {
+        if (isSentinel()){
+            currentText = currentText.next;
+        }
+        int currentHeight = (int)currentText.item.getLayoutBounds().getHeight();
+        int lineIndex = cursorY / currentHeight + 1;
+        if (lineIndex > (newLineList.size() - 1)) {
+            currentText = newLineList.get(newLineList.size() - 1);
+            return currentText.item;
+        }
+        currentText = newLineList.get(lineIndex);
+        return currentText.item;
     }
 
     /**render all the text, also map them with their position*/
@@ -165,7 +181,9 @@ public class TextList {
                 x = 5;
                 y = y + (int)Math.round(thisText.getLayoutBounds().getHeight()/2.0);
             }
-            renderTextHelper(thisText, x, y);
+            newLineList = new ArrayList<Node>();
+            renderTextHelper(thisText, thisNode, x, y);
+            newLineList.add(thisNode);
             /**for the rest text, iterate*/
             if (size > 1) {
                 while (thisNode.next != sentinel) {
@@ -188,16 +206,16 @@ public class TextList {
                         x = 5;
                         y = y + (int)Math.round(thisText.getLayoutBounds().getHeight()/2.0);
                     }
-                    renderTextHelper(thisText, x, y);
+                    renderTextHelper(thisText, thisNode, x, y);
                 }
             }
         }
     }
 
-    private void renderTextHelper(Text thisText, int x, int y) {
+    private void renderTextHelper(Text thisText,Node thisNode, int x, int y) {
         thisText.setX(x);
         thisText.setY(y);
-        textMapping(x, y, thisText);
+        recordNewLine(y, thisNode);
     }
     /**Returns true if deque is empty, false otherwise.*/
     

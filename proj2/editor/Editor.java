@@ -12,6 +12,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -43,8 +44,9 @@ public class Editor extends Application {
     Group root;
     private TextList textList;
     private LinkedList<Character> charReadList;
-    private int cursorX;
-    private int cursorY;
+    //private int cursorX;
+    //private int cursorY;
+    private int firstLineY;
     private String inputFilename;
     private String outputFilename;
 
@@ -56,8 +58,9 @@ public class Editor extends Application {
         /**Storing the textList of the document. Initialize it with an empty LinkedList.*/
         textList = new TextList();
         charReadList= new LinkedList<Character>();
-        cursorX = 0;
-        cursorY = 0;
+        //cursorX = 0;
+        //cursorY = 0;
+        //firstLineY = 0;
     }
     /**
      * An EventHandler to handle keys that get pressed.
@@ -88,7 +91,6 @@ public class Editor extends Application {
              root.getChildren().add(displayText);
              ***********/
         }
-
         @Override
         public void handle(KeyEvent keyEvent) {
             if ((keyEvent.getEventType() == KeyEvent.KEY_TYPED)) {
@@ -151,158 +153,6 @@ public class Editor extends Application {
                 }
             }
         }
-        private void handleBackSpace() {
-            if (!textList.isSentinel()) {
-                int oldCursorX = (int)textBoundingBox.getX();
-                int oldCursorY = (int)textBoundingBox.getY();
-                textList.delete(root);
-                textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
-                renderBlinkingCursor();
-                //When the most recent action was to delete text and the cursor position is
-                // ambiguous, it should appear on the line where the deleted text was.
-                int newCursorX = (int)textBoundingBox.getX();
-                int newCursorY = (int)textBoundingBox.getY();
-                if (oldCursorX != 5) {
-                    if ((oldCursorY > newCursorY) | (oldCursorX < newCursorX)) {
-                        //getNextText() would change currentText's position in the textList,
-                        // so it needs to be fixed back.
-                        Text nextText = textList.getNextText();
-                        int newX = (int)nextText.getX();
-                        int newY = (int)nextText.getY();
-                        textBoundingBox.setX(newX);
-                        textBoundingBox.setY(newY);
-
-                    }
-                    System.out.println("Bounding box: " + textBoundingBox);
-                }
-            }
-        }
-        private void handleDownArrow() {
-            if (textList.getNextText() == null) {
-                return;
-            }else {
-                int oldCursorX = (int)textBoundingBox.getX();
-                int oldCursorY = (int)textBoundingBox.getY();
-                int originalCursorX = oldCursorX;
-                handleRightArrow();
-                int newCursorX = (int)textBoundingBox.getX();
-                int newCursorY = (int)textBoundingBox.getY();
-                //iterate until the next line, if it reaches the end of the file, break and return.
-                while ((newCursorY == oldCursorY) && (newCursorX != oldCursorX)) {
-                    oldCursorX = newCursorX;
-                    oldCursorY = newCursorY;
-                    handleRightArrow();
-                    newCursorX = (int)textBoundingBox.getX();
-                    newCursorY = (int)textBoundingBox.getY();
-                }
-                if (newCursorX == oldCursorX) {
-                    return;
-                }else {
-                    oldCursorY = newCursorY;
-                    /**iterate until new CursorX is larger than the original cursorX,
-                    if it reaches the end of the file, break and return.*/
-                    while ((newCursorX != oldCursorX) && (newCursorX < originalCursorX) && ((newCursorY == oldCursorY))) {
-                        oldCursorX = newCursorX;
-                        oldCursorY = newCursorY;
-                        handleRightArrow();
-                        newCursorX = (int)textBoundingBox.getX();
-                        newCursorY = (int)textBoundingBox.getY();
-                    }
-                    if (newCursorY != oldCursorY) {
-                        handleLeftArrow();
-                    }else if (newCursorX == oldCursorX) {
-                        return;
-                    }
-                    else{
-                        int largeX = newCursorX;
-                        handleLeftArrow();
-                        int smallX = (int)textBoundingBox.getX();
-                        //double middleX = (largeX + smallX) / 2.0;
-                        if (Math.abs(largeX - originalCursorX) <= Math.abs(smallX - originalCursorX)) {
-                            handleRightArrow();
-                        }
-                    }
-                }
-            }
-        }
-        private void handleUpArrow() {
-
-        }
-        private void handleLeftArrow() {
-            //if the cursor is at the beginning of the file, do nothing
-            if (textList.isSentinel()) {
-                return;
-            }else {
-                int oldCursorX = (int)textBoundingBox.getX();
-                int oldCursorY = (int)textBoundingBox.getY();
-                textList.moveToPrevious();
-                //textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
-                renderBlinkingCursor();
-                if (textList.isSentinel()) {
-                    return;
-                }
-                //for ambiguous position of the cursor, it stays at the beginning
-                // of the line below
-                int newCursorY = (int)textBoundingBox.getY();
-                if ((oldCursorX != 5) && (newCursorY < oldCursorY)) {
-                    //textList.moveToNext();
-                    textBoundingBox.setX(5);
-                    textBoundingBox.setY(oldCursorY);
-                }
-            }
-        }
-        private void handleRightArrow() {
-            //if the cursor is at the end of the file, do nothing
-            if (textList.getNextText() == null) {
-                return;
-            }else {
-                int oldCursorY = (int)textBoundingBox.getY();
-                textList.moveToNext();
-                renderBlinkingCursor();
-                //if the previous line ends with a new line, the height needs to be half.
-                if (textList.getNextText() == null) {
-                    return;
-                }
-                if (textList.getNextText().getText().equals("\n")) {
-                    //textList.moveToNext();
-                    //renderBlinkingCursor();
-                }else {
-                    //for ambiguous position of the cursor, it stays at the beginning
-                    // of the line below.
-                    int currentTextY = (int)textList.getCurrentText().getY();
-                    if (textList.getNextText() == null) {
-                        return;
-                    }else{
-                        int nextTextY = (int)textList.getNextText().getY();
-                        if (nextTextY > currentTextY) {
-                            textBoundingBox.setX(5);
-                            textBoundingBox.setY(nextTextY);
-                        }
-                    }
-                }
-            }
-        }
-        private void handleClick(int cursorX, int cursorY) {
-
-        }
-        /**handle Ctrl+'+', Ctrl+'-', Ctrl+'s'*/
-        private void handleShortCutKey(KeyCode code) {
-            if (code == KeyCode.ADD) {
-                if (textList.size() != 0) {
-                    fontSize += 4;
-                    textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
-                    renderBlinkingCursor();
-                }
-            }else if ((code == KeyCode.SUBTRACT)|(code == KeyCode.MINUS)) {
-                if (textList.size() != 0) {
-                    fontSize = Math.max(4, fontSize - 4);
-                    textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
-                    renderBlinkingCursor();
-                }
-            }else if (code == KeyCode.S) {
-                writeFile();
-            }
-        }
     }
     /** An EventHandler to handle changing the color of the rectangle. */
     private class RectangleBlinkEventHandler implements EventHandler<ActionEvent> {
@@ -322,6 +172,21 @@ public class Editor extends Application {
         @Override
         public void handle(ActionEvent event) {
             changeColor();
+        }
+    }
+    /** An event handler that displays the current position of the mouse whenever it is clicked. */
+    private class MouseClickEventHandler implements EventHandler<MouseEvent> {
+        MouseClickEventHandler() {
+        }
+
+        @Override
+        public void handle(MouseEvent mouseEvent) {
+            // Because we registered this EventHandler using setOnMouseClicked, it will only called
+            // with mouse events of type MouseEvent.MOUSE_CLICKED.  A mouse clicked event is
+            // generated anytime the mouse is pressed and released on the same JavaFX node.
+            int mouseClickedX = (int)mouseEvent.getX();
+            int mouseClickedY = (int)mouseEvent.getY();
+            handleClick(mouseClickedX, mouseClickedY);
         }
     }
     /** Makes the text bounding box change color periodically. */
@@ -386,6 +251,247 @@ public class Editor extends Application {
             // For rectangles, the position is the upper left hand corner.
             textBoundingBox.setX(5);
             textBoundingBox.setY(0);
+        }
+    }
+    private void handleBackSpace() {
+        if (!textList.isSentinel()) {
+            int oldCursorX = (int)textBoundingBox.getX();
+            int oldCursorY = (int)textBoundingBox.getY();
+            textList.delete(root);
+            textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
+            renderBlinkingCursor();
+            //When the most recent action was to delete text and the cursor position is
+            // ambiguous, it should appear on the line where the deleted text was.
+            int newCursorX = (int)textBoundingBox.getX();
+            int newCursorY = (int)textBoundingBox.getY();
+            if (oldCursorX != 5) {
+                if ((oldCursorY > newCursorY) | (oldCursorX < newCursorX)) {
+                    //getNextText() would change currentText's position in the textList,
+                    // so it needs to be fixed back.
+                    Text nextText = textList.getNextText();
+                    int newX = (int)nextText.getX();
+                    int newY = (int)nextText.getY();
+                    textBoundingBox.setX(newX);
+                    textBoundingBox.setY(newY);
+
+                }
+                System.out.println("Bounding box: " + textBoundingBox);
+            }
+        }
+    }
+    private void handleDownArrow() {
+        if (textList.getNextText() == null) {
+            return;
+        }else {
+            int oldCursorX = (int)textBoundingBox.getX();
+            int oldCursorY = (int)textBoundingBox.getY();
+            int originalCursorX = oldCursorX;
+            handleRightArrow();
+            int newCursorX = (int)textBoundingBox.getX();
+            int newCursorY = (int)textBoundingBox.getY();
+            //iterate until the next line, if it reaches the end of the file, break and return.
+            while ((newCursorY == oldCursorY) && (newCursorX != oldCursorX)) {
+                oldCursorX = newCursorX;
+                oldCursorY = newCursorY;
+                handleRightArrow();
+                newCursorX = (int)textBoundingBox.getX();
+                newCursorY = (int)textBoundingBox.getY();
+            }
+            if (newCursorX == oldCursorX) {
+                return;
+            }else {
+                oldCursorY = newCursorY;
+                /**iterate until new CursorX is larger than the original cursorX,
+                 if it reaches the end of the file, break and return.*/
+                while ((newCursorX != oldCursorX) && (newCursorX < originalCursorX) && ((newCursorY == oldCursorY))) {
+                    oldCursorX = newCursorX;
+                    oldCursorY = newCursorY;
+                    handleRightArrow();
+                    newCursorX = (int)textBoundingBox.getX();
+                    newCursorY = (int)textBoundingBox.getY();
+                }
+                //when an newline is met
+                if (newCursorY != oldCursorY) {
+                    handleLeftArrow();
+                }else if (newCursorX == oldCursorX) {
+                    return;
+                }
+                else{
+                    int largeX = newCursorX;
+                    handleLeftArrow();
+                    int smallX = (int)textBoundingBox.getX();
+                    //double middleX = (largeX + smallX) / 2.0;
+                    if (Math.abs(largeX - originalCursorX) <= Math.abs(smallX - originalCursorX)) {
+                        handleRightArrow();
+                    }
+                }
+            }
+        }
+    }
+    private void handleUpArrow() {
+        if (textList.isSentinel()) {
+            return;
+        }else {
+            int oldCursorX = (int)textBoundingBox.getX();
+            int oldCursorY = (int)textBoundingBox.getY();
+            int originalCursorX = oldCursorX;
+            handleLeftArrow();
+            int newCursorX = (int)textBoundingBox.getX();
+            int newCursorY = (int)textBoundingBox.getY();
+            //iterate until the line above, if it reaches the beginning of the file, break and return.
+            while ((newCursorY == oldCursorY) && (newCursorX != oldCursorX)) {
+                oldCursorX = newCursorX;
+                oldCursorY = newCursorY;
+                handleLeftArrow();
+                newCursorX = (int)textBoundingBox.getX();
+                newCursorY = (int)textBoundingBox.getY();
+            }
+            if (newCursorX == oldCursorX) {
+                return;
+            }else {
+                //when meet a new line
+                if (newCursorX <= originalCursorX) {
+                    return;
+                }
+                //oldCursorY = newCursorY;
+
+                /**iterate until new CursorX is smaller than the original cursorX,
+                 if it reaches the beginning of the file, break and return.*/
+                while (newCursorX > originalCursorX) {
+                    oldCursorX = newCursorX;
+                    //oldCursorY = newCursorY;
+                    handleLeftArrow();
+                    newCursorX = (int)textBoundingBox.getX();
+                    //newCursorY = (int)textBoundingBox.getY();
+                }
+                int smallX = newCursorX;
+                handleRightArrow();
+                int largeX = (int)textBoundingBox.getX();
+                //double middleX = (largeX + smallX) / 2.0;
+                if (Math.abs(largeX - originalCursorX) >= Math.abs(smallX - originalCursorX)) {
+                    handleLeftArrow();
+                }
+            }
+        }
+    }
+    private void handleLeftArrow() {
+        //if the cursor is at the beginning of the file, do nothing
+        if (textList.isSentinel()) {
+            return;
+        }else {
+            int oldCursorX = (int)textBoundingBox.getX();
+            int oldCursorY = (int)textBoundingBox.getY();
+            textList.moveToPrevious();
+            //textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
+            renderBlinkingCursor();
+            if (textList.isSentinel()) {
+                return;
+            }
+            //for ambiguous position of the cursor, it stays at the beginning
+            // of the line below
+            int newCursorY = (int)textBoundingBox.getY();
+            if ((oldCursorX != 5) && (newCursorY < oldCursorY)) {
+                //textList.moveToNext();
+                textBoundingBox.setX(5);
+                textBoundingBox.setY(oldCursorY);
+            }
+        }
+    }
+    private void handleRightArrow() {
+        //if the cursor is at the end of the file, do nothing
+        if (textList.getNextText() == null) {
+            return;
+        }else {
+            int oldCursorY = (int)textBoundingBox.getY();
+            textList.moveToNext();
+            renderBlinkingCursor();
+            //if the previous line ends with a new line, the height needs to be half.
+            if (textList.getNextText() == null) {
+                return;
+            }
+            if (textList.getNextText().getText().equals("\n")) {
+                //textList.moveToNext();
+                //renderBlinkingCursor();
+            }else {
+                //for ambiguous position of the cursor, it stays at the beginning
+                // of the line below.
+                int currentTextY = (int)textList.getCurrentText().getY();
+                if (textList.getNextText() == null) {
+                    return;
+                }else{
+                    int nextTextY = (int)textList.getNextText().getY();
+                    if (nextTextY > currentTextY) {
+                        textBoundingBox.setX(5);
+                        textBoundingBox.setY(nextTextY);
+                    }
+                }
+            }
+        }
+    }
+    private void handleClick(int cursorX, int cursorY) {
+        if (textList.size() == 0) {
+            return;
+        }
+        Text newLineStarter = textList.getNewLineStarter(cursorY);
+        int currentX = (int)newLineStarter.getX();
+        if (currentX >= cursorX) {
+            return;
+        }
+        if (cursorX < newLineStarter.getLayoutBounds().getWidth()) {
+            if (cursorX < (0.5 * newLineStarter.getLayoutBounds().getWidth())) {
+                handleLeftArrow();
+                return;
+            }else {
+                return;
+            }
+        }
+        int currentY = (int)newLineStarter.getY();
+        int oldX = currentX;
+        int oldY = currentY;
+        while (currentX < cursorX) {
+            oldX = currentX;
+            oldY = currentY;
+            handleRightArrow();
+            currentX = (int)textBoundingBox.getX();
+            //detect end of the file.
+            if (currentX == oldX) {
+                break;
+            }
+            currentY = (int)textList.getCurrentText().getY();
+            //detect a new line
+            if (currentY != oldY) {
+                break;
+            }
+        }
+        if (currentX == oldX) {
+            return;
+        }
+        if (currentY != oldY) {
+            handleLeftArrow();
+        }
+        int largeX = currentX;
+        handleLeftArrow();
+        int smallX = currentX;
+        if (Math.abs(largeX - cursorX) <= Math.abs(smallX - cursorX)) {
+            handleRightArrow();
+        }
+    }
+    /**handle Ctrl+'+', Ctrl+'-', Ctrl+'s'*/
+    private void handleShortCutKey(KeyCode code) {
+        if (code == KeyCode.ADD) {
+            if (textList.size() != 0) {
+                fontSize += 4;
+                textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
+                renderBlinkingCursor();
+            }
+        }else if ((code == KeyCode.SUBTRACT)|(code == KeyCode.MINUS)) {
+            if (textList.size() != 0) {
+                fontSize = Math.max(4, fontSize - 4);
+                textList.renderText(WINDOW_WIDTH, WINDOW_HEIGHT, fontName, fontSize);
+                renderBlinkingCursor();
+            }
+        }else if (code == KeyCode.S) {
+            writeFile();
         }
     }
     /**handle the window size, rerender the information when the size is changed.*/
@@ -502,13 +608,13 @@ public class Editor extends Application {
         // Register the event handler to be called for all KEY_PRESSED and KEY_TYPED events.
         scene.setOnKeyTyped(keyEventHandler);
         scene.setOnKeyPressed(keyEventHandler);
+        scene.setOnMouseClicked(new MouseClickEventHandler());
 
         // All new Nodes need to be added to the root in order to be displayed.
         root.getChildren().add(textBoundingBox);
         makeRectangleColorChange();
 
         handleWindowSize(scene);
-
 
         primaryStage.setTitle("Editor");
         // This is boilerplate, necessary to setup the window where things are displayed.
