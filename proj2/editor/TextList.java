@@ -97,11 +97,12 @@ public class TextList {
         }return null;
 
     }
-    /**move the currentText to the next*/
+    /**move the currentText to the next,
+     * this method can point currentText to sentinel!!!*/
     public void moveToPrevious() {
-        if (currentText.next.item != null) {
+
             currentText = currentText.previous;
-        }
+
     }
     /**move the currentText to the next*/
     public void moveToNext() {
@@ -109,6 +110,7 @@ public class TextList {
             currentText = currentText.next;
         }
     }
+    //return true if currentText points to the sentinel
     public boolean isSentinel() {
         return (currentText == sentinel);
     }

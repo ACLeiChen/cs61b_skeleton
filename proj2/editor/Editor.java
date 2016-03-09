@@ -34,7 +34,7 @@ public class Editor extends Application {
     private static int WINDOW_WIDTH = 500;
     private static int WINDOW_HEIGHT = 500;
 
-    private static final int STARTING_FONT_SIZE = 20;
+    private static final int STARTING_FONT_SIZE = 40;
     private static final int STARTING_TEXT_POSITION_X = 250;
     private static final int STARTING_TEXT_POSITION_Y = 250;
     private static int fontSize = STARTING_FONT_SIZE;
@@ -178,14 +178,59 @@ public class Editor extends Application {
             }
         }
         private void handleDownArrow() {
-
+            if (textList.getNextText() == null) {
+                return;
+            }else {
+                int oldCursorX = (int)textBoundingBox.getX();
+                int oldCursorY = (int)textBoundingBox.getY();
+                int originalCursorX = oldCursorX;
+                handleRightArrow();
+                int newCursorX = (int)textBoundingBox.getX();
+                int newCursorY = (int)textBoundingBox.getY();
+                //iterate until the next line, if it reaches the end of the file, break and return.
+                while ((newCursorY == oldCursorY) && (newCursorX != oldCursorX)) {
+                    oldCursorX = newCursorX;
+                    oldCursorY = newCursorY;
+                    handleRightArrow();
+                    newCursorX = (int)textBoundingBox.getX();
+                    newCursorY = (int)textBoundingBox.getY();
+                }
+                if (newCursorX == oldCursorX) {
+                    return;
+                }else {
+                    oldCursorY = newCursorY;
+                    /**iterate until new CursorX is larger than the original cursorX,
+                    if it reaches the end of the file, break and return.*/
+                    while ((newCursorX != oldCursorX) && (newCursorX < originalCursorX) && ((newCursorY == oldCursorY))) {
+                        oldCursorX = newCursorX;
+                        oldCursorY = newCursorY;
+                        handleRightArrow();
+                        newCursorX = (int)textBoundingBox.getX();
+                        newCursorY = (int)textBoundingBox.getY();
+                    }
+                    if (newCursorY != oldCursorY) {
+                        handleLeftArrow();
+                    }else if (newCursorX == oldCursorX) {
+                        return;
+                    }
+                    else{
+                        int largeX = newCursorX;
+                        handleLeftArrow();
+                        int smallX = (int)textBoundingBox.getX();
+                        //double middleX = (largeX + smallX) / 2.0;
+                        if (Math.abs(largeX - originalCursorX) <= Math.abs(smallX - originalCursorX)) {
+                            handleRightArrow();
+                        }
+                    }
+                }
+            }
         }
         private void handleUpArrow() {
 
         }
         private void handleLeftArrow() {
-            //if the cursor is at the begining of the file, do nothing
-            if ((textBoundingBox.getX() == 5) && (textList.isSentinel())) {
+            //if the cursor is at the beginning of the file, do nothing
+            if (textList.isSentinel()) {
                 return;
             }else {
                 int oldCursorX = (int)textBoundingBox.getX();
@@ -196,23 +241,46 @@ public class Editor extends Application {
                 if (textList.isSentinel()) {
                     return;
                 }
-                //if the previous line ends with a new line, the height needs to be half.
-                if (textList.getCurrentText().equals("\n")) {
-                    int halfHeight = (int)(textList.getCurrentText().getLayoutBounds().getHeight() / 2);
-                    textBoundingBox.setHeight(halfHeight);
-                }
                 //for ambiguous position of the cursor, it stays at the beginning
-                // of the previous line
+                // of the line below
                 int newCursorY = (int)textBoundingBox.getY();
                 if ((oldCursorX != 5) && (newCursorY < oldCursorY)) {
-                    textList.moveToNext();
+                    //textList.moveToNext();
                     textBoundingBox.setX(5);
                     textBoundingBox.setY(oldCursorY);
                 }
             }
         }
         private void handleRightArrow() {
-
+            //if the cursor is at the end of the file, do nothing
+            if (textList.getNextText() == null) {
+                return;
+            }else {
+                int oldCursorY = (int)textBoundingBox.getY();
+                textList.moveToNext();
+                renderBlinkingCursor();
+                //if the previous line ends with a new line, the height needs to be half.
+                if (textList.getNextText() == null) {
+                    return;
+                }
+                if (textList.getNextText().getText().equals("\n")) {
+                    //textList.moveToNext();
+                    //renderBlinkingCursor();
+                }else {
+                    //for ambiguous position of the cursor, it stays at the beginning
+                    // of the line below.
+                    int currentTextY = (int)textList.getCurrentText().getY();
+                    if (textList.getNextText() == null) {
+                        return;
+                    }else{
+                        int nextTextY = (int)textList.getNextText().getY();
+                        if (nextTextY > currentTextY) {
+                            textBoundingBox.setX(5);
+                            textBoundingBox.setY(nextTextY);
+                        }
+                    }
+                }
+            }
         }
         private void handleClick(int cursorX, int cursorY) {
 
