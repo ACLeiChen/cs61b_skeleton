@@ -314,6 +314,7 @@ public class Grid {
         removeOccupant(x, y);
         placeOccupant(tx, ty, from);
         from.attack(to);
+
         getInLine(tx, ty);
     }
 
